@@ -63,7 +63,7 @@
             <span class="code-lang">Lua</span>
           </div>
           <pre class="code-body"><code><span class="cv">Goat_key</span> = <span class="cs">"your-key-here"</span>
-<span class="cf">loadstring</span>(<span class="cv">game</span>:<span class="cf">HttpGet</span>(<span class="cs">"https://raw.githubusercontent.com/GoatHub/loader/main/loader.lua"</span>))()</code></pre>
+<span class="cf">loadstring</span>(<span class="cv">game</span>:<span class="cf">HttpGet</span>(<span class="cs">"https://your-domain.com/loader.lua"</span>))()</code></pre>
         </div>
         <p style="font-size:0.82rem;color:var(--text3);margin-top:12px;">Replace <code style="color:var(--accent)">your-key-here</code> with your username/key.</p>
       </div>
@@ -75,21 +75,20 @@
     async function lookupKey() {
       const key = document.getElementById('keyInput').value.trim();
       if (!key) return;
-      const username = key.split('_')[0] || key;
       const result = document.getElementById('resultCard');
       const body = document.getElementById('resultBody');
       const status = document.getElementById('resultStatus');
       result.style.display = 'block';
       body.innerHTML = '<p style="color:var(--text2)">Looking up…</p>';
       try {
-        const d = await fetch('/api/keyauth/userdata?username=' + encodeURIComponent(username)).then(r => r.json());
+        const d = await fetch('/api/v1/user?key=' + encodeURIComponent(key)).then(r => r.json());
         if (!d.success) {
           status.innerHTML = '<span class="badge badge-red">Not Found</span>';
           body.innerHTML = '<p style="color:var(--text2)">This key was not found. Please contact your provider.</p>';
           return;
         }
         const now = Math.floor(Date.now() / 1000);
-        const expired = d.plan?.expires_at && d.plan.expires_at < now;
+        const expired = d.expires_at && d.expires_at < now;
         const active = !d.banned && !expired;
         status.innerHTML = d.banned
           ? '<span class="badge badge-red">Banned</span>'
@@ -99,9 +98,9 @@
 
         body.innerHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
-            <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Username</div><div class="font-mono text-accent">${d.username}</div></div>
+            <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Key</div><div class="font-mono text-accent">${d.key}</div></div>
             <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Tier</div><div>${subBadge(d.subscription)}</div></div>
-            <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Expires</div><div style="font-size:.9rem">${d.plan?.display || 'Lifetime'}</div></div>
+            <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Expires</div><div style="font-size:.9rem">${d.expires_display || 'Lifetime'}</div></div>
             <div><div class="text-xs text-muted" style="margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Status</div><div style="font-size:.9rem;color:${active ? 'var(--accent)' : 'var(--red)'}">${d.banned ? 'Banned' : expired ? 'Expired' : 'Active'}</div></div>
           </div>
           ${d.banned ? '<div style="margin-top:16px;padding:12px;background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);border-radius:10px;font-size:.875rem;color:var(--red)">Your key has been banned. Please contact support.</div>' : ''}

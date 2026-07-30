@@ -101,8 +101,8 @@
         </div>
         <div class="feature-card">
           <div class="feature-icon">⚡</div>
-          <h3>KeyAuth Compatible</h3>
-          <p>Drop-in replacement for KeyAuth's API. Works with existing Lua loaders with minimal changes — just swap the host.</p>
+          <h3>Native GoatAuth API</h3>
+          <p>Completely independent auth system with its own API at <code>/api/v1/</code>. No third-party dependencies — your data stays on your server.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">📜</div>
@@ -182,11 +182,9 @@
           <span class="code-dot green"></span>
           <span class="code-lang">Lua</span>
         </div>
-        <pre class="code-body"><code><span class="cm">-- User sets their GoatAuth key before executing</span>
+        <pre class="code-body"><code><span class="cm">-- Set your GoatAuth key, then execute the loader</span>
 <span class="cv">Goat_key</span> = <span class="cs">"YourKeyHere"</span>
-
-<span class="cm">-- Then execute the GoatAuth loader</span>
-<span class="cf">loadstring</span>(<span class="cv">game</span>:<span class="cf">HttpGet</span>(<span class="cs">"https://yoursite.com/loader.lua"</span>))()</code></pre>
+<span class="cf">loadstring</span>(<span class="cv">game</span>:<span class="cf">HttpGet</span>(<span class="cs">"https://your-domain.com/loader.lua"</span>))()</code></pre>
       </div>
       <div class="code-note">
         The loader handles everything: anti-tamper checks, key validation, HWID locking, script selection, and execution tracking.
