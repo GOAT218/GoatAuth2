@@ -1,0 +1,6 @@
+node_modules/
+database/goatauth.db
+database/*.db-shm
+database/*.db-wal
+.env
+*.db

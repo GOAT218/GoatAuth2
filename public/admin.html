@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — GoatAuth</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐐</text></svg>" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar toggle (mobile) -->
+    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <a href="/" class="sidebar-logo">
+        <span class="logo-icon">🐐</span>
+        <span class="logo-text">GoatAuth</span>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Main</div>
+        <a href="#" class="active" data-page="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#" data-page="users">
+          <span class="nav-icon">🔑</span> Keys / Users
+        </a>
+        <a href="#" data-page="executions">
+          <span class="nav-icon">⚡</span> Executions
+        </a>
+        <div class="sidebar-section" style="margin-top:12px;">Settings</div>
+        <a href="#" data-page="apps">
+          <span class="nav-icon">📦</span> Apps
+        </a>
+        <a href="#" data-page="settings">
+          <span class="nav-icon">⚙️</span> Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="font-size:0.78rem;color:var(--text3);margin-bottom:8px;" id="sidebarUser">—</div>
+        <button class="btn btn-ghost btn-sm w-full" onclick="logout()">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content" id="mainContent">
+      <!-- pages rendered here -->
+    </main>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="modalCreateUser">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Create Key / User</span>
+        <button class="modal-close" onclick="closeModal('modalCreateUser')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Username / Key</label>
+          <input class="form-input" id="cuUsername" placeholder="e.g. goat-user123" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subscription</label>
+          <select class="form-select" id="cuSub">
+            <option value="free">Free</option>
+            <option value="default">Default</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expires At (Unix timestamp, blank = never)</label>
+          <input class="form-input" id="cuExpires" type="number" placeholder="e.g. 1800000000" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note (optional)</label>
+          <input class="form-input" id="cuNote" placeholder="Internal note..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modalCreateUser')">Cancel</button>
+        <button class="btn btn-primary" onclick="createUser()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Generate Modal -->
+  <div class="modal-overlay" id="modalBulk">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Bulk Generate Keys</span>
+        <button class="modal-close" onclick="closeModal('modalBulk')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Count (max 100)</label>
+            <input class="form-input" id="bulkCount" type="number" value="10" min="1" max="100" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prefix</label>
+            <input class="form-input" id="bulkPrefix" value="goat" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subscription</label>
+          <select class="form-select" id="bulkSub">
+            <option value="free">Free</option>
+            <option value="default">Default</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expires At (Unix, blank = never)</label>
+          <input class="form-input" id="bulkExpires" type="number" placeholder="optional" />
+        </div>
+        <div id="bulkResult" style="display:none">
+          <label class="form-label">Generated Keys</label>
+          <textarea class="form-textarea" id="bulkKeys" rows="8" style="font-family:monospace;font-size:0.8rem;" readonly></textarea>
+          <button class="btn btn-ghost btn-sm" onclick="copyBulkKeys()" style="margin-top:8px;">Copy All</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('modalBulk')">Close</button>
+        <button class="btn btn-primary" onclick="generateBulk()">Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal-overlay" id="modalEditUser">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Edit User</span>
+        <button class="modal-close" onclick="closeModal('modalEditUser')">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="euId" />
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input font-mono" id="euUsername" readonly style="opacity:0.6;" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subscription</label>
+          <select class="form-select" id="euSub">
+            <option value="free">Free</option>
+            <option value="default">Default</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Expires At (Unix timestamp)</label>
+          <input class="form-input" id="euExpires" type="number" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Note</label>
+          <input class="form-input" id="euNote" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ban</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="euBanned" style="width:16px;height:16px;" />
+            <label for="euBanned" style="font-size:0.88rem;color:var(--text2);">Banned</label>
+          </div>
+        </div>
+        <div class="form-group" id="banReasonGroup" style="display:none">
+          <label class="form-label">Ban Reason</label>
+          <input class="form-input" id="euBanReason" placeholder="Reason for ban..." />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost btn-sm" onclick="resetHwid()">Reset HWID</button>
+        <button class="btn btn-ghost" onclick="closeModal('modalEditUser')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveUser()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js"></script>
+  <script>
+    // ─── Auth guard ──────────────────────────────────────────────────────────
+    async function checkAuth() {
+      try {
+        const d = await API.get('/api/auth/me');
+        document.getElementById('sidebarUser').textContent = d.username;
+      } catch { window.location.href = '/login.html'; }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login.html';
+    }
+
+    // ─── Navigation ──────────────────────────────────────────────────────────
+    let currentPage = 'dashboard';
+    function navigate(page) {
+      currentPage = page;
+      document.querySelectorAll('.sidebar-nav a').forEach(a => {
+        a.classList.toggle('active', a.dataset.page === page);
+      });
+      const content = document.getElementById('mainContent');
+      pages[page]?.();
+    }
+
+    document.querySelectorAll('.sidebar-nav a[data-page]').forEach(a => {
+      a.addEventListener('click', e => { e.preventDefault(); navigate(a.dataset.page); });
+    });
+
+    setupSidebar();
+    ['modalCreateUser','modalBulk','modalEditUser'].forEach(setupModal);
+
+    document.getElementById('euBanned').addEventListener('change', e => {
+      document.getElementById('banReasonGroup').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    // ─── Dashboard page ───────────────────────────────────────────────────────
+    async function pageDashboard() {
+      const c = document.getElementById('mainContent');
+      c.innerHTML = `<div class="page-header"><h1 class="page-title">Dashboard</h1><p class="page-sub">Overview of your GoatAuth instance</p></div><div class="stats-row" id="statsRow"></div><div class="card"><div class="card-header"><span class="card-title">Recent Executions</span></div><div class="table-wrap"><table id="recentTable"><thead><tr><th>User</th><th>Roblox</th><th>Executor</th><th>Game</th><th>IP</th><th>When</th></tr></thead><tbody id="recentBody"></tbody></table></div></div>`;
+      const d = await API.get('/api/admin/stats');
+      document.getElementById('statsRow').innerHTML = [
+        ['🔑', d.totalUsers, 'Total Keys'],
+        ['⚡', d.execsToday, 'Execs Today'],
+        ['📊', d.totalExecs, 'Total Execs'],
+        ['🚫', d.bannedUsers, 'Banned'],
+      ].map(([i,v,l]) => `<div class="stat-card"><span class="stat-card-icon">${i}</span><span class="stat-card-val">${v.toLocaleString()}</span><span class="stat-card-label">${l}</span></div>`).join('');
+
+      document.getElementById('recentBody').innerHTML = d.recentExecs.map(e => `
+        <tr>
+          <td class="font-mono text-sm text-accent">${e.username || '—'}</td>
+          <td class="text-sm">${e.roblox_user || '—'}</td>
+          <td>${e.executor || '—'}</td>
+          <td class="text-sm text-muted truncate" style="max-width:200px">${e.game || '—'}</td>
+          <td class="text-xs text-muted font-mono">${e.ip || '—'}</td>
+          <td class="text-xs text-muted">${timeAgo(e.timestamp)}</td>
+        </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:32px">No executions yet</td></tr>';
+    }
+
+    // ─── Users page ───────────────────────────────────────────────────────────
+    let userPage = 1, userSearch = '', userSubFilter = '';
+
+    async function pageUsers() {
+      const c = document.getElementById('mainContent');
+      c.innerHTML = `
+        <div class="page-header flex items-center justify-between">
+          <div><h1 class="page-title">Keys / Users</h1><p class="page-sub">Manage authentication keys</p></div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost btn-sm" onclick="openModal('modalBulk')">Bulk Generate</button>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modalCreateUser')">+ Create Key</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input class="form-input" placeholder="Search username..." id="userSearch" value="${userSearch}" />
+          <select class="form-select" id="userSubFilter">
+            <option value="">All tiers</option>
+            <option value="free">Free</option>
+            <option value="default">Default</option>
+            <option value="premium">Premium</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="applyUserFilters()">Filter</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table><thead><tr><th>Username</th><th>Tier</th><th>HWID</th><th>Execs</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="usersBody"><tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="userPagination"></div>
+        </div>`;
+      document.getElementById('userSearch').addEventListener('keydown', e => { if (e.key === 'Enter') applyUserFilters(); });
+      document.getElementById('userSubFilter').value = userSubFilter;
+      await loadUsers();
+    }
+
+    function applyUserFilters() {
+      userSearch = document.getElementById('userSearch').value;
+      userSubFilter = document.getElementById('userSubFilter').value;
+      userPage = 1;
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      const params = new URLSearchParams({ page: userPage, limit: 50 });
+      if (userSearch) params.set('search', userSearch);
+      if (userSubFilter) params.set('subscription', userSubFilter);
+      const d = await API.get('/api/admin/users?' + params);
+      const tbody = document.getElementById('usersBody');
+      if (!tbody) return;
+      tbody.innerHTML = d.users.map(u => `
+        <tr>
+          <td class="font-mono text-sm text-accent">${u.username}</td>
+          <td>${subBadge(u.subscription)}</td>
+          <td class="font-mono text-xs text-muted">${u.hwid ? u.hwid.slice(0,12)+'…' : '<span style="color:var(--text3)">none</span>'}</td>
+          <td>${u.exec_count}</td>
+          <td class="text-xs text-muted">${fmtDate(u.expires_at) || 'Never'}</td>
+          <td>${u.banned ? '<span class="badge badge-red">Banned</span>' : '<span class="badge badge-green">Active</span>'}</td>
+          <td>
+            <div class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" onclick="editUser(${u.id})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id},'${u.username}')">Del</button>
+            </div>
+          </td>
+        </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">No keys found</td></tr>';
+
+      const pag = document.getElementById('userPagination');
+      if (pag) {
+        pag.innerHTML = '';
+        const prev = document.createElement('button');
+        prev.className = 'page-btn'; prev.textContent = '←'; prev.disabled = userPage <= 1;
+        prev.onclick = () => { userPage--; loadUsers(); };
+        pag.appendChild(prev);
+        for (let i = 1; i <= d.pages; i++) {
+          const b = document.createElement('button');
+          b.className = 'page-btn' + (i === userPage ? ' active' : '');
+          b.textContent = i; b.onclick = () => { userPage = i; loadUsers(); };
+          pag.appendChild(b);
+        }
+        const next = document.createElement('button');
+        next.className = 'page-btn'; next.textContent = '→'; next.disabled = userPage >= d.pages;
+        next.onclick = () => { userPage++; loadUsers(); };
+        pag.appendChild(next);
+      }
+    }
+
+    async function createUser() {
+      const d = await API.post('/api/admin/users', {
+        username: document.getElementById('cuUsername').value,
+        subscription: document.getElementById('cuSub').value,
+        expires_at: document.getElementById('cuExpires').value ? parseInt(document.getElementById('cuExpires').value) : null,
+        note: document.getElementById('cuNote').value || null
+      });
+      if (d.success) { toast('Key created!'); closeModal('modalCreateUser'); loadUsers(); }
+      else toast(d.error || 'Error', 'error');
+    }
+
+    async function generateBulk() {
+      const d = await API.post('/api/admin/users/bulk', {
+        count: parseInt(document.getElementById('bulkCount').value),
+        prefix: document.getElementById('bulkPrefix').value,
+        subscription: document.getElementById('bulkSub').value,
+        expires_at: document.getElementById('bulkExpires').value ? parseInt(document.getElementById('bulkExpires').value) : null
+      });
+      if (d.success) {
+        document.getElementById('bulkResult').style.display = 'block';
+        document.getElementById('bulkKeys').value = d.created.map(k => k.username).join('\n');
+        toast(`Generated ${d.created.length} keys!`);
+        loadUsers();
+      } else toast(d.error || 'Error', 'error');
+    }
+
+    function copyBulkKeys() {
+      navigator.clipboard.writeText(document.getElementById('bulkKeys').value);
+      toast('Copied to clipboard!');
+    }
+
+    async function editUser(id) {
+      const d = await API.get('/api/admin/users/' + id);
+      document.getElementById('euId').value = d.id;
+      document.getElementById('euUsername').value = d.username;
+      document.getElementById('euSub').value = d.subscription || 'free';
+      document.getElementById('euExpires').value = d.expires_at || '';
+      document.getElementById('euNote').value = d.note || '';
+      document.getElementById('euBanned').checked = !!d.banned;
+      document.getElementById('euBanReason').value = d.ban_reason || '';
+      document.getElementById('banReasonGroup').style.display = d.banned ? 'block' : 'none';
+      openModal('modalEditUser');
+    }
+
+    async function saveUser() {
+      const id = document.getElementById('euId').value;
+      const d = await API.patch('/api/admin/users/' + id, {
+        subscription: document.getElementById('euSub').value,
+        expires_at: document.getElementById('euExpires').value ? parseInt(document.getElementById('euExpires').value) : null,
+        note: document.getElementById('euNote').value || null,
+        banned: document.getElementById('euBanned').checked,
+        ban_reason: document.getElementById('euBanReason').value || null
+      });
+      if (d.success) { toast('Saved!'); closeModal('modalEditUser'); loadUsers(); }
+      else toast(d.error || 'Error', 'error');
+    }
+
+    async function resetHwid() {
+      const id = document.getElementById('euId').value;
+      const d = await API.post('/api/admin/users/' + id + '/reset-hwid', {});
+      if (d.success) toast('HWID reset!');
+      else toast('Error', 'error');
+    }
+
+    async function deleteUser(id, name) {
+      if (!confirm(`Delete key "${name}"? This cannot be undone.`)) return;
+      const d = await API.delete('/api/admin/users/' + id);
+      if (d.success) { toast('Deleted'); loadUsers(); }
+      else toast('Error', 'error');
+    }
+
+    // ─── Executions page ──────────────────────────────────────────────────────
+    let execPage = 1;
+    async function pageExecutions() {
+      const c = document.getElementById('mainContent');
+      c.innerHTML = `<div class="page-header"><h1 class="page-title">Executions</h1><p class="page-sub">Every script execution logged in real time</p></div><div class="card"><div class="table-wrap"><table><thead><tr><th>User</th><th>Roblox</th><th>Executor</th><th>Game</th><th>Job ID</th><th>HWID</th><th>IP</th><th>When</th></tr></thead><tbody id="execBody"></tbody></table></div><div class="pagination" id="execPagination"></div></div>`;
+      await loadExecs();
+    }
+
+    async function loadExecs() {
+      const d = await API.get('/api/admin/executions?page=' + execPage + '&limit=50');
+      const tbody = document.getElementById('execBody');
+      if (!tbody) return;
+      tbody.innerHTML = d.executions.map(e => `
+        <tr>
+          <td class="font-mono text-sm text-accent">${e.username || '—'}</td>
+          <td class="text-sm">${e.roblox_user || '—'} ${e.roblox_id ? '<span class="text-xs text-muted">('+e.roblox_id+')</span>' : ''}</td>
+          <td class="text-sm">${e.executor || '—'}</td>
+          <td class="text-sm text-muted truncate" style="max-width:180px">${e.game || '—'}</td>
+          <td class="font-mono text-xs text-muted truncate" style="max-width:140px">${e.job_id || '—'}</td>
+          <td class="font-mono text-xs text-muted">${e.hwid ? e.hwid.slice(0,10)+'…' : '—'}</td>
+          <td class="font-mono text-xs text-muted">${e.ip || '—'}</td>
+          <td class="text-xs text-muted">${fmtDateTime(e.timestamp)}</td>
+        </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)">No executions</td></tr>';
+
+      const pag = document.getElementById('execPagination');
+      if (pag) {
+        pag.innerHTML = '';
+        const prev = document.createElement('button');
+        prev.className = 'page-btn'; prev.textContent = '←'; prev.disabled = execPage <= 1;
+        prev.onclick = () => { execPage--; loadExecs(); };
+        pag.appendChild(prev);
+        const info = document.createElement('span');
+        info.style.cssText = 'color:var(--text2);font-size:0.82rem;padding:0 8px';
+        info.textContent = `Page ${execPage} of ${d.pages}`;
+        pag.appendChild(info);
+        const next = document.createElement('button');
+        next.className = 'page-btn'; next.textContent = '→'; next.disabled = execPage >= d.pages;
+        next.onclick = () => { execPage++; loadExecs(); };
+        pag.appendChild(next);
+      }
+    }
+
+    // ─── Apps page ────────────────────────────────────────────────────────────
+    async function pageApps() {
+      const c = document.getElementById('mainContent');
+      c.innerHTML = `<div class="page-header"><h1 class="page-title">Apps</h1><p class="page-sub">Manage GoatAuth applications</p></div><div class="card" id="appsCard"><p style="color:var(--text2)">Loading…</p></div>`;
+      const d = await API.get('/api/admin/apps');
+      document.getElementById('appsCard').innerHTML = `
+        <div class="card-header"><span class="card-title">Applications</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Owner ID</th><th>Version</th><th>Created</th></tr></thead>
+        <tbody>${d.apps.map(a => `<tr>
+          <td class="font-mono text-accent">${a.name}</td>
+          <td class="font-mono text-sm">${a.owner_id}</td>
+          <td>${a.version}</td>
+          <td class="text-sm text-muted">${fmtDate(a.created_at)}</td>
+        </tr>`).join('')}</tbody></table></div>`;
+    }
+
+    // ─── Settings page ────────────────────────────────────────────────────────
+    function pageSettings() {
+      document.getElementById('mainContent').innerHTML = `
+        <div class="page-header"><h1 class="page-title">Settings</h1><p class="page-sub">Admin account settings</p></div>
+        <div class="card" style="max-width:480px">
+          <div class="card-header"><span class="card-title">Change Password</span></div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" type="password" id="cpCurrent" /></div>
+            <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" id="cpNew" /></div>
+            <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+          </div>
+        </div>`;
+    }
+
+    async function changePassword() {
+      const d = await API.post('/api/auth/change-password', { current: document.getElementById('cpCurrent').value, newPassword: document.getElementById('cpNew').value });
+      if (d.success) toast('Password updated!');
+      else toast(d.error || 'Error', 'error');
+    }
+
+    const pages = { dashboard: pageDashboard, users: pageUsers, executions: pageExecutions, apps: pageApps, settings: pageSettings };
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+    checkAuth().then(() => navigate('dashboard'));
+  </script>
+</body>
+</html>

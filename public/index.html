@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoatAuth — Roblox Script Authentication</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐐</text></svg>" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <span class="logo-icon">🐐</span>
+        <span class="logo-text">GoatAuth</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="/admin.html" class="btn btn-ghost">Admin</a>
+        <a href="/dashboard.html" class="btn btn-primary">Dashboard</a>
+      </div>
+      <button class="nav-toggle" onclick="toggleNav()">&#9776;</button>
+    </div>
+    <div class="nav-mobile" id="navMobile">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/admin.html">Admin</a>
+      <a href="/dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Roblox Authentication Service
+    </div>
+    <h1 class="hero-title">
+      Protect Your Scripts<br />
+      <span class="gradient-text">Like a GOAT</span>
+    </h1>
+    <p class="hero-sub">
+      GoatAuth is a blazing-fast authentication service built for Roblox executors.
+      Lock your scripts to keys, track executions, and manage users — all in one place.
+    </p>
+    <div class="hero-actions">
+      <a href="/dashboard.html" class="btn btn-primary btn-lg">
+        Get Started <span class="arrow">→</span>
+      </a>
+      <a href="#how-it-works" class="btn btn-ghost btn-lg">See how it works</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num" id="statUsers">—</span>
+        <span class="stat-label">Active Keys</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num" id="statExecs">—</span>
+        <span class="stat-label">Executions Today</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">99.9%</span>
+        <span class="stat-label">Uptime</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-inner">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need to<br /><span class="gradient-text">secure your scripts</span></h2>
+      <p class="section-sub">A full-featured auth platform built specifically for the Roblox ecosystem.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔑</div>
+          <h3>Key Management</h3>
+          <p>Create, revoke, and manage authentication keys. Set expiry dates, assign subscription tiers, and add notes to each key.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3>HWID Locking</h3>
+          <p>Bind keys to hardware IDs on first use. Prevent key sharing and ensure each key is tied to a single device automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Execution Tracking</h3>
+          <p>See every script execution in real time. Track Roblox usernames, executors, game IDs, and timestamps for full audit logs.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Native GoatAuth API</h3>
+          <p>Completely independent auth system with its own API at <code>/api/v1/</code>. No third-party dependencies — your data stays on your server.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📜</div>
+          <h3>Script Serving</h3>
+          <p>Host and serve your Lua scripts directly through GoatAuth. Route different scripts per game ID with subscription tier support.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚫</div>
+          <h3>Blacklist & Bans</h3>
+          <p>Ban users instantly with a reason. Banned users are blocked at the API level — no script loads, no exceptions.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🏷️</div>
+          <h3>Subscription Tiers</h3>
+          <p>Offer free and premium tiers. Load different scripts per tier — free users get base scripts, premium users get full access.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Anti-Tamper Ready</h3>
+          <p>Built-in loader supports HTTPSpy detection, anti-cheat scanning, and HWID verification before any auth request is made.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="section section-alt" id="how-it-works">
+    <div class="section-inner">
+      <div class="section-label">How it works</div>
+      <h2 class="section-title">Simple integration,<br /><span class="gradient-text">powerful protection</span></h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-content">
+            <h3>Create a Key</h3>
+            <p>Generate authentication keys from the admin panel. Set subscription tier, expiry date, and HWID locking settings.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-content">
+            <h3>Distribute to Users</h3>
+            <p>Give keys to your users. Each key maps to a unique username. Users set <code>Goat_key = "username"</code> before executing.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-content">
+            <h3>Loader Authenticates</h3>
+            <p>The GoatAuth loader calls our KeyAuth-compatible API, verifies the key, locks the HWID, and loads the script automatically.</p>
+          </div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-content">
+            <h3>Track Everything</h3>
+            <p>Every execution is logged — Roblox username, executor, game, job ID, and hardware ID — visible in your dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code snippet -->
+  <section class="section" id="integration">
+    <div class="section-inner narrow">
+      <div class="section-label">Integration</div>
+      <h2 class="section-title">One-line <span class="gradient-text">setup</span></h2>
+      <p class="section-sub">Users just set their key and execute. That's it.</p>
+      <div class="code-card">
+        <div class="code-header">
+          <span class="code-dot red"></span>
+          <span class="code-dot yellow"></span>
+          <span class="code-dot green"></span>
+          <span class="code-lang">Lua</span>
+        </div>
+        <pre class="code-body"><code><span class="cm">-- Set your GoatAuth key, then execute the loader</span>
+<span class="cv">Goat_key</span> = <span class="cs">"YourKeyHere"</span>
+<span class="cf">loadstring</span>(<span class="cv">game</span>:<span class="cf">HttpGet</span>(<span class="cs">"https://your-domain.com/loader.lua"</span>))()</code></pre>
+      </div>
+      <div class="code-note">
+        The loader handles everything: anti-tamper checks, key validation, HWID locking, script selection, and execution tracking.
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section cta-section">
+    <div class="section-inner narrow center">
+      <h2 class="section-title">Ready to secure<br /><span class="gradient-text">your scripts?</span></h2>
+      <p class="section-sub">Set up GoatAuth in minutes and take full control over your Roblox script distribution.</p>
+      <div class="hero-actions">
+        <a href="/admin.html" class="btn btn-primary btn-lg">Open Admin Panel <span class="arrow">→</span></a>
+        <a href="/dashboard.html" class="btn btn-ghost btn-lg">User Dashboard</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-icon">🐐</span>
+        <span class="logo-text">GoatAuth</span>
+      </div>
+      <p class="footer-copy">© 2026 GoatAuth. Built for Roblox script authentication.</p>
+    </div>
+  </footer>
+
+  <script>
+    function toggleNav() {
+      document.getElementById('navMobile').classList.toggle('open');
+    }
+
+    async function loadStats() {
+      try {
+        const r = await fetch('/api/admin/stats', { credentials: 'include' });
+        if (!r.ok) return;
+        const d = await r.json();
+        document.getElementById('statUsers').textContent = d.totalUsers.toLocaleString();
+        document.getElementById('statExecs').textContent = d.execsToday.toLocaleString();
+      } catch {}
+    }
+    loadStats();
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+      });
+    });
+
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+      document.querySelector('.nav').classList.toggle('nav-scrolled', window.scrollY > 40);
+    });
+  </script>
+</body>
+</html>
